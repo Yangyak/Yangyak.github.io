@@ -2,10 +2,10 @@
 title: 肠造口护理之家
 description: 一个肠造口术后护理无烦恼的在线学习平台
 url: https://vszhub.github.io
-avatar: /avatar.jpg
+avatar: /bg.jpg
 paginate: 5
 permalink: pretty
-cover_image: /bg.jpg
+cover_image: /avatar.jpg
 
 # Gems
 plugins:
