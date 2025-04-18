@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>颈椎固定顺序训练</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+        .game-container {
+            width: 800px;
+            max-width: 100%;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-top: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .description {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #7f8c8d;
+        }
+        .patient-img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .timer {
+            font-size: 20px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .btn {
+            padding: 10px 25px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+        .btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .slots-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .slot {
+            width: 120px;
+            height: 70px;
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            color: #7f8c8d;
+            background-color: #f9f9f9;
+            transition: all 0.2s;
+        }
+        .slot.highlight {
+            border-color: #2ecc71;
+            background-color: #e8f8f0;
+        }
+        .slot.filled {
+            background-color: #d6eaf8;
+            color: #2874a6;
+            border-style: solid;
+            border-color: #3498db;
+        }
+        .items-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .item {
+            width: 120px;
+            height: 50px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            user-select: none;
+            font-size: 13px;
+            text-align: center;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+        .item.dragging {
+            opacity: 0.7;
+            transform: scale(1.05);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+        .message {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .error {
+            background-color: #fdecea;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+        }
+        .success {
+            background-color: #e8f8f0;
+            color: #27ae60;
+            border: 1px solid #2ecc71;
+        }
+        .player-name {
+            margin-top: 15px;
+            padding: 10px;
+            text-align: center;
+        }
+        #nameInput {
+            padding: 8px 15px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-right: 10px;
+            width: 200px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .shake {
+            animation: shake 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>颈椎固定顺序训练</h1>
+        <p class="description">请按正确顺序排列颈椎固定步骤，成为急救组长！</p>
+        
+        <img src="https://p3.itc.cn/q_70/images03/20231120/aaf7e3b9c3eb453fac67aafc3e66296b.png" alt="受伤患者" class="patient-img">
+        
+        <div class="player-name">
+            <input type="text" id="nameInput" placeholder="请输入您的名字" value="急救学员">
+            <button id="saveNameBtn" class="btn">保存</button>
+        </div>
+        
+        <div class="controls">
+            <div class="timer">时间: <span id="time">00:00</span></div>
+            <button id="startBtn" class="btn">开始训练</button>
+        </div>
+        
+        <div class="slots-row" id="slots">
+            <div class="slot" data-index="0">步骤1</div>
+            <div class="slot" data-index="1">步骤2</div>
+            <div class="slot" data-index="2">步骤3</div>
+            <div class="slot" data-index="3">步骤4</div>
+            <div class="slot" data-index="4">步骤5</div>
+            <div class="slot" data-index="5">步骤6</div>
+        </div>
+        
+        <div class="items-row" id="items">
+            <!-- 项目将通过JS动态生成 -->
+        </div>
+        
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        // 正确顺序
+        const CORRECT_ORDER = [
+            "头锁固定",
+            "头胸锁固定",
+            "头肩锁固定",
+            "头胸锁固定",
+            "双肩锁固定",
+            "头胸锁固定"
+        ];
+        
+        // 游戏状态
+        let gameStarted = false;
+        let startTime;
+        let timerInterval;
+        let currentOrder = Array(6).fill(null);
+        let playerName = "急救学员";
+        
+        // DOM元素
+        const startBtn = document.getElementById('startBtn');
+        const saveNameBtn = document.getElementById('saveNameBtn');
+        const nameInput = document.getElementById('nameInput');
+        const timeDisplay = document.getElementById('time');
+        const slots = document.querySelectorAll('.slot');
+        const itemsContainer = document.getElementById('items');
+        const messageDiv = document.getElementById('message');
+        
+        // 保存玩家姓名
+        saveNameBtn.addEventListener('click', () => {
+            const name = nameInput.value.trim();
+            if (name) {
+                playerName = name;
+                alert(`姓名已保存为: ${playerName}`);
+            } else {
+                alert('请输入有效的姓名');
+            }
+        });
+        
+        // 初始化游戏
+        function initGame() {
+            // 随机打乱顺序
+            let shuffledItems = [...CORRECT_ORDER];
+            for (let i = shuffledItems.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
+            }
+            
+            // 清空容器
+            itemsContainer.innerHTML = '';
+            
+            // 创建可拖拽项目
+            shuffledItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.textContent = item;
+                div.draggable = true;
+                div.dataset.value = item;
+                
+                div.addEventListener('dragstart', dragStart);
+                div.addEventListener('dragend', dragEnd);
+                
+                itemsContainer.appendChild(div);
+            });
+            
+            // 重置当前顺序
+            currentOrder = Array(6).fill(null);
+            updateSlots();
+        }
+        
+        // 开始游戏
+        function startGame() {
+            if (gameStarted) return;
+            
+            gameStarted = true;
+            startBtn.disabled = true;
+            nameInput.disabled = true;
+            saveNameBtn.disabled = true;
+            startTime = new Date();
+            
+            timerInterval = setInterval(updateTimer, 1000);
+            initGame();
+        }
+        
+        // 更新计时器
+        function updateTimer() {
+            const now = new Date();
+            const elapsed = new Date(now - startTime);
+            const minutes = elapsed.getMinutes().toString().padStart(2, '0');
+            const seconds = elapsed.getSeconds().toString().padStart(2, '0');
+            timeDisplay.textContent = `${minutes}:${seconds}`;
+        }
+        
+        // 拖拽开始
+        function dragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.value);
+            e.target.classList.add('dragging');
+        }
+        
+        // 拖拽结束
+        function dragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+        
+        // 设置拖拽相关事件
+        slots.forEach(slot => {
+            slot.addEventListener('dragover', e => {
+                e.preventDefault();
+                slot.classList.add('highlight');
+            });
+            
+            slot.addEventListener('dragleave', () => {
+                slot.classList.remove('highlight');
+            });
+            
+            slot.addEventListener('drop', e => {
+                e.preventDefault();
+                slot.classList.remove('highlight');
+                
+                const data = e.dataTransfer.getData('text/plain');
+                const index = parseInt(slot.dataset.index);
+                
+                // 检查是否已经有项目在这个位置
+                const items = document.querySelectorAll('.item');
+                const draggedItem = Array.from(items).find(item => item.classList.contains('dragging'));
+                
+                if (draggedItem) {
+                    // 更新当前顺序
+                    currentOrder[index] = data;
+                    updateSlots();
+                    
+                    // 检查是否完成
+                    checkCompletion();
+                }
+            });
+        });
+        
+        // 更新槽位显示
+        function updateSlots() {
+            slots.forEach((slot, index) => {
+                if (currentOrder[index]) {
+                    slot.textContent = currentOrder[index];
+                    slot.classList.add('filled');
+                } else {
+                    slot.textContent = `步骤${index + 1}`;
+                    slot.classList.remove('filled');
+                }
+            });
+        }
+        
+        // 检查是否完成
+        function checkCompletion() {
+            // 检查所有槽位是否已填满
+            if (currentOrder.every(item => item !== null)) {
+                if (JSON.stringify(currentOrder) === JSON.stringify(CORRECT_ORDER)) {
+                    // 正确顺序
+                    clearInterval(timerInterval);
+                    showMessage(`恭喜${playerName}！顺序正确！<br>任命院前急救组长为：${playerName}`, 'success');
+                    playSound('success');
+                    startBtn.disabled = false;
+                    gameStarted = false;
+                } else {
+                    // 错误顺序
+                    showMessage('错误！病人颈椎加重损伤！请重新开始！', 'error');
+                    playSound('error');
+                    slots.forEach(slot => slot.classList.add('shake'));
+                    setTimeout(() => {
+                        slots.forEach(slot => slot.classList.remove('shake'));
+                        initGame();
+                    }, 2000);
+                }
+            }
+        }
+        
+        // 显示消息
+        function showMessage(msg, type) {
+            messageDiv.innerHTML = msg;
+            messageDiv.className = 'message ' + type;
+            messageDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // 播放音效
+        function playSound(type) {
+            const audio = new Audio();
+            audio.src = type === 'error' ? 
+                'https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3' :
+                'https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3';
+            audio.play();
+        }
+        
+        // 事件监听
+        startBtn.addEventListener('click', startGame);
+        
+        // 按Enter键保存姓名
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                saveNameBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
